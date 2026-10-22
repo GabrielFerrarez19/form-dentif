@@ -12,4 +12,4 @@ if ! docker start formularios-mongo >/dev/null 2>&1; then
     echo "Não consegui iniciar o MongoDB. O Docker está instalado e rodando?"; exit 1; }
 fi
 
-exec .venv/bin/streamlit run app.py --browser.gatherUsageStats false
+exec .venv/bin/streamlit run app.py --browser.gatherUsageStats false --server.headless true

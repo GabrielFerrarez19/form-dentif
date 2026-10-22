@@ -1,4 +1,4 @@
-"""Dashboard do projeto: indicadores de impacto a partir dos questionários (C e G) e do diário (F).
+"""Dashboard do projeto: indicadores de impacto a partir dos questionários (C e G).
 
 Os cálculos (funções sem streamlit) ficam separados do desenho para poderem ser testados.
 Metas: as do Instrumento H (Consolidação dos indicadores de impacto).
@@ -168,7 +168,8 @@ def encontros(f: pd.DataFrame) -> pd.DataFrame:
 
 
 def qualidade(origens: pd.DataFrame) -> pd.DataFrame:
-    nomes = {"ocr": "Lido pelo OCR", "revisado": "Corrigido na revisão", "manual": "Digitado", "editado": "Editado depois"}
+    nomes = {"ocr": "Lido pelo OCR", "revisado": "Corrigido na revisão",
+             "aprendido": "Corrigido pelo que aprendeu", "manual": "Digitado", "editado": "Editado depois"}
     if origens.empty:
         return pd.DataFrame(columns=["Método", "Campos", "%"])
     cont = origens["metodo"].map(nomes).fillna("Outro").value_counts().reindex(list(nomes.values()), fill_value=0)
@@ -390,38 +391,19 @@ def pagina():
             st.plotly_chart(_layout(fig, cores, 230, legenda=False), width="stretch", config=SEM_FERRAMENTAS, key="dash_idade")
             st.caption(f"Média: {idades.mean():.0f} anos · de {idades.min():.0f} a {idades.max():.0f}")
 
-    # ---- diário de bordo
-    st.subheader("Diário de bordo dos encontros")
-    enc = encontros(d["F"])
-    if enc.empty:
-        st.caption("Nenhum diário de bordo gravado ainda.")
-    else:
-        a, b = st.columns([1, 2])
-        a.metric("Encontros registrados", len(enc))
-        a.metric("Conteúdo cumprido integralmente", _fmt(ind["conteudo_integral"]),
-                 help="Pergunta 1 do diário de bordo")
-        with b:
-            t = contagem(d["F"], "conteudo_cumprido", opcoes(d["inst"]["F"], "conteudo_cumprido"))
-            st.plotly_chart(_barras_h(go, cores, t, "Respostas", "Resposta", cores["barra"],
-                                      texto=[f"{v} encontro(s)" for v in t["Respostas"]],
-                                      hover="%{y}: %{x} encontro(s)<extra></extra>"),
-                            width="stretch", config=SEM_FERRAMENTAS, key="dash_conteudo")
-        st.dataframe(enc, hide_index=True, width="stretch",
-                     column_config={"Encontro": st.column_config.NumberColumn(format="%d")})
-
     # ---- qualidade dos dados
     st.subheader("De onde vieram os dados")
     q = qualidade(dados["origens"])
     if q["Campos"].sum():
         fig = go.Figure()
-        for (_, r), cor in zip(q.iterrows(), ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"] if modo == "light"
-                               else ["#3987e5", "#d95926", "#199e70", "#c98500"]):
+        for (_, r), cor in zip(q.iterrows(), ["#2a78d6", "#eb6834", "#8a5cd1", "#1baf7a", "#eda100"] if modo == "light"
+                               else ["#3987e5", "#d95926", "#9b72de", "#199e70", "#c98500"]):
             fig.add_trace(_faixa(go, [r["%"]], ["Campos"], r["Método"], cor, cores,
                                  f"{r['Método']}: %{{x:.0%}} ({r['Campos']} campos)<extra></extra>"))
         fig.update_layout(barmode="stack")
         fig.update_xaxes(tickformat=".0%", range=[0, 1])
         fig.update_yaxes(showgrid=False, showticklabels=False)
         st.plotly_chart(_layout(fig, cores, 150), width="stretch", config=SEM_FERRAMENTAS, key="dash_qualidade")
-        st.caption("Todos os campos gravados de C, F e G, pelo método. Detalhes por formulário em "
+        st.caption("Todos os campos gravados de C e G, pelo método. Detalhes por formulário em "
                    "**5. Ver dados extraídos**.")
         _tabela(st, q)

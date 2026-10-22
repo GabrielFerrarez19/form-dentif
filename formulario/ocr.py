@@ -9,11 +9,15 @@ Fluxo para cada página:
 """
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 
 import cv2
 import numpy as np
 
 from pathlib import Path
+
+from . import portugues
 
 MODELO_ORIGINAL = "microsoft/trocr-base-handwritten"
 # modelo ajustado com ferramentas/treinar_modelo.py; só existe se ele foi melhor que o original no teste
@@ -25,6 +29,9 @@ LIMIAR_VAZIO = 0.004      # fração mínima de tinta para considerar o campo pr
 LIMIAR_MARCADO = 0.06     # fração de tinta para considerar uma caixinha marcada
 LIMIAR_CONFIANCA = 0.70   # abaixo disso o campo é destacado para revisão
 LIMIAR_VERMELHO = 60      # quanto o vermelho supera o verde/azul para a tinta ser ignorada
+# threads do TrOCR: em processadores com núcleos rápidos e lentos (ex.: i7-1255U, 12 threads), usar
+# todas deixa a leitura 2x mais lenta, porque os núcleos rápidos ficam esperando os lentos
+THREADS_OCR = int(os.environ.get("THREADS_OCR") or min(8, os.cpu_count() or 1))
 
 
 # ---------------------------------------------------------------- imagens
@@ -88,9 +95,11 @@ def identificar_pagina(img: np.ndarray, referencias: dict) -> tuple[int | None, 
     referencias = {numero_pagina: caracteristicas(imagem_em_branco)}.
     Retorna (numero_pagina, pontos_coincidentes); None se nenhuma bater."""
     feat = caracteristicas(img)
+    # compara com todas as páginas ao mesmo tempo (o OpenCV libera o Python enquanto calcula)
+    with ThreadPoolExecutor(max_workers=min(len(referencias), os.cpu_count() or 1) or 1) as ex:
+        inliers = list(ex.map(lambda fb: _homografia(feat, fb)[1], referencias.values()))
     melhor, pontos = None, 0
-    for n, fb in referencias.items():
-        _, inl = _homografia(feat, fb)
+    for n, inl in zip(referencias, inliers):
         if inl > pontos:
             melhor, pontos = n, inl
     return (melhor, pontos) if pontos >= MIN_PONTOS_ALINHAMENTO else (None, pontos)
@@ -229,32 +238,106 @@ def separar_linhas(limpa: np.ndarray) -> list[np.ndarray]:
 class LeitorManuscrito:
     """Carrega o TrOCR uma vez. Depois de baixado, funciona 100% offline."""
 
+    MAX_TOKENS = 64
+    LOTE = int(os.environ.get("LOTE_OCR") or 8)  # linhas lidas juntas (cada uma ocupa ~60 MB de memória)
+
     def __init__(self, modelo: str = MODELO_TROCR):
         import torch
         from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 
-        torch.set_num_threads(max(1, os.cpu_count() or 1))
+        torch.set_num_threads(THREADS_OCR)
         self.torch = torch
         kw = {"local_files_only": True} if os.environ.get("HF_HUB_OFFLINE") == "1" else {}
         self.proc = TrOCRProcessor.from_pretrained(modelo, **kw)
         self.modelo = VisionEncoderDecoderModel.from_pretrained(modelo, **kw).eval()
+        self.vies = None  # empurra o modelo (treinado em inglês) para palavras em português
+        if os.environ.get("OCR_PORTUGUES", "1") != "0":
+            try:
+                self.vies = portugues.vies_leitura(self.proc.tokenizer, self.modelo.config.decoder.vocab_size)
+            except Exception:  # sem os dicionários (pyspellchecker): lê sem o empurrão
+                pass
 
     def ler_linhas(self, linhas: list[np.ndarray]) -> tuple[str, float]:
-        if not linhas:
-            return "", 1.0
-        rgb = [cv2.cvtColor(l, cv2.COLOR_GRAY2RGB) for l in linhas]
-        px = self.proc(images=rgb, return_tensors="pt").pixel_values
-        with self.torch.no_grad():
-            out = self.modelo.generate(px, max_new_tokens=64, num_beams=1, use_cache=True,
-                                       output_scores=True, return_dict_in_generate=True)
-        textos = self.proc.batch_decode(out.sequences, skip_special_tokens=True)
-        trans = self.modelo.compute_transition_scores(out.sequences, out.scores, normalize_logits=True)
+        """Lê as linhas de um campo. Retorna (texto, confiança)."""
+        return self.ler_campos([linhas])[0]
+
+    def ler_campos(self, campos: list[list[np.ndarray]]) -> list[tuple[str, float]]:
+        """Lê vários campos de uma vez (cada um é uma lista de linhas). Retorna [(texto, confiança)].
+        No processador, o que custa é ler os pesos do modelo da memória a cada pedaço de texto
+        gerado; lendo várias linhas juntas, esse custo é dividido entre elas.
+        As linhas de um mesmo campo vão sempre no mesmo lote, e o resultado de cada campo é o mesmo
+        de lê-lo sozinho: texto igual e confiança = a da pior linha, cada uma sendo a probabilidade
+        média que o modelo deu aos pedaços de texto que escolheu."""
+        out = [("", 1.0) if not linhas else None for linhas in campos]
+        lote, lotes = [], []
+        for k, linhas in enumerate(campos):
+            if not linhas:
+                continue
+            if lote and sum(len(campos[j]) for j in lote) + len(linhas) > self.LOTE:
+                lotes.append(lote)
+                lote = []
+            lote.append(k)
+        if lote:
+            lotes.append(lote)
+        for lote in lotes:
+            linhas = [l for k in lote for l in campos[k]]
+            px = self.proc(images=[cv2.cvtColor(l, cv2.COLOR_GRAY2RGB) for l in linhas], return_tensors="pt").pixel_values
+            with self.torch.no_grad():
+                seqs, probs, tamanhos, empurradas = self._decodificar(px)
+            textos = self.proc.batch_decode(seqs, skip_special_tokens=True)
+            i = 0
+            for k in lote:
+                n = len(campos[k])
+                # como no generate() de um campo sozinho: conta os passos até a linha mais longa
+                # do campo terminar (as que terminam antes recebem "pad" e ele entra na média)
+                passos = max(tamanhos[i:i + n])
+                conf = min(float(probs[j, :passos].mean()) for j in range(i, i + n))
+                if any(empurradas[i:i + n]):
+                    # o empurrão para o português mudou alguma escolha do modelo: vai para revisão
+                    # (sem o empurrão o campo seria lido exatamente como antes)
+                    conf = min(conf, LIMIAR_CONFIANCA - 0.01)
+                out[k] = ("\n".join(t.strip() for t in textos[i:i + n]).strip(), conf)
+                i += n
+        return out
+
+    def _decodificar(self, px):
+        """Decodificação gulosa (a mesma do generate(num_beams=1)), passo a passo com o cache de
+        atenção. O generate() do transformers recalcula tudo a cada passo neste modelo e fica ~3x
+        mais lento, com o mesmo resultado.
+        Retorna (sequências, probabilidade do pedaço escolhido em cada passo, passos de cada linha,
+        linhas em que o empurrão para o português mudou alguma escolha)."""
+        torch, m = self.torch, self.modelo
+        cfg = m.generation_config
+        enc = m.encoder(pixel_values=px).last_hidden_state
+        if hasattr(m, "enc_to_dec_proj"):
+            enc = m.enc_to_dec_proj(enc)
+        n = px.shape[0]
+        seqs = torch.full((n, 1), cfg.decoder_start_token_id, dtype=torch.long)
+        ativas = torch.ones(n, dtype=torch.bool)
+        tamanhos = torch.full((n,), self.MAX_TOKENS)
+        empurradas = torch.zeros(n, dtype=torch.bool)
         probs = []
-        for linha in trans:
-            validos = linha[linha > -1e9]
-            probs.append(float(validos.exp().mean()) if len(validos) else 0.0)
-        texto = "\n".join(t.strip() for t in textos).strip()
-        return texto, min(probs) if probs else 0.0
+        entrada, cache = seqs, None
+        for passo in range(self.MAX_TOKENS):
+            out = m.decoder(input_ids=entrada, encoder_hidden_states=enc, past_key_values=cache, use_cache=True)
+            cache = out.past_key_values
+            notas = out.logits[:, -1].float()
+            logp = notas.log_softmax(-1)
+            # escolhe com o empurrão para o português, mas a confiança vem do modelo original: se ele
+            # só escolheu a palavra em português por causa do empurrão, a confiança cai e vai para revisão
+            escolha = (notas + self.vies if self.vies is not None else notas).argmax(-1)
+            empurradas |= ativas & (escolha != notas.argmax(-1))
+            # linha que já terminou recebe "pad", como no generate()
+            prox = torch.where(ativas, escolha, cfg.pad_token_id)
+            probs.append(logp.gather(1, prox[:, None])[:, 0].exp())
+            seqs = torch.cat([seqs, prox[:, None]], 1)
+            terminou = ativas & (prox == cfg.eos_token_id)
+            tamanhos[terminou] = passo + 1
+            ativas &= ~terminou
+            if not ativas.any():
+                break
+            entrada = prox[:, None]
+        return seqs, torch.stack(probs, 1), tamanhos.tolist(), empurradas.tolist()
 
 
 # ---------------------------------------------------------------- pós-processamento
@@ -327,20 +410,44 @@ def normalizar(texto: str, tipo: str, ano: int | None = None, formato: str | Non
 # ---------------------------------------------------------------- formulário inteiro
 
 def ler_formulario(alinhadas: dict, bases: dict, campos: list[dict],
-                   leitor: "LeitorManuscrito | None") -> dict:
+                   leitor: "LeitorManuscrito | None", corretor: "portugues.Corretor | None" = None) -> dict:
     """alinhadas/bases = {numero_pagina: imagem}. Cada campo é lido na sua página;
     campos de páginas que não foram enviadas ficam vazios para digitação manual.
-    Retorna {coluna: {"valor", "confianca", "recorte"}} para cada campo."""
-    res = {}
+    Retorna {coluna: {"valor", "confianca", "recorte"}} para cada campo.
+    Os campos escritos do formulário inteiro são lidos juntos pelo TrOCR (bem mais rápido)."""
+    res, escritos = {}, []
     for c in campos:
         pag = c.get("pagina")
         if pag not in alinhadas or pag not in bases:
             res[c["coluna"]] = {"valor": "", "confianca": 0.0, "recorte": None, "faltou_pagina": True}
             continue
         try:
-            res[c["coluna"]] = _ler_campo(c, alinhadas[pag], bases[pag], leitor)
+            r = _ler_campo(c, alinhadas[pag], bases[pag], leitor)
+            if "linhas" in r:
+                escritos.append(c)
+            res[c["coluna"]] = r
         except Exception as e:  # um campo com problema não pode derrubar o formulário inteiro
             res[c["coluna"]] = {"valor": "", "confianca": 0.0, "recorte": None, "erro": str(e)}
+    if escritos:
+        try:
+            lidos = leitor.ler_campos([res[c["coluna"]].pop("linhas") for c in escritos])
+        except Exception as e:
+            lidos = [e] * len(escritos)
+        for c, lido in zip(escritos, lidos):
+            r = res[c["coluna"]]
+            if isinstance(lido, Exception):
+                res[c["coluna"]] = {"valor": "", "confianca": 0.0, "recorte": r["recorte"], "erro": str(lido)}
+                continue
+            texto, conf = lido
+            valor = normalizar(texto, c["tipo"], c.get("ano"), c.get("formato"))
+            if c["tipo"] == "texto" and not c.get("formato"):
+                corrigido = (corretor or _corretor_padrao()).texto(valor)
+                if corrigido != valor:
+                    r["portugues"] = _trocas(valor, corrigido)
+                    valor = corrigido
+            if not valido(valor, c["tipo"], c.get("formato")):
+                conf = min(conf, 0.3)  # formato impossível: sempre vai para revisão
+            r["valor"], r["confianca"] = valor, conf
     return res
 
 
@@ -348,28 +455,19 @@ def _ler_campo(c: dict, alinhada: np.ndarray, base: np.ndarray, leitor) -> dict:
     tipo = c["tipo"]
     if tipo == "marcacao":
         cz, m = tinta_manuscrita(alinhada, base, c["caixa"])
-        lim = c.get("limiar", LIMIAR_MARCADO)
         f = fracao_tinta(m, margem=0.15)
-        marcado = f >= lim
-        # confiança cai perto do limiar, onde a decisão é duvidosa
-        conf = min(1.0, abs(f - lim) / lim)
-        return {"valor": "Sim" if marcado else "Não", "confianca": conf, "recorte": cz}
+        valor, conf = decidir_marcacao(f, c.get("limiar", LIMIAR_MARCADO))
+        return {"valor": valor, "confianca": conf, "recorte": cz, "fracao": f}
     elif tipo == "escolha":
         lim = c.get("limiar", LIMIAR_MARCADO)  # células de tabela grandes usam limiar menor
         fr = []
         for op in c.get("opcoes", []):
             _, m = tinta_manuscrita(alinhada, base, op["caixa"])
             fr.append((fracao_tinta(m, margem=0.15), op["valor"]))
-        fr.sort(reverse=True)
-        if not fr or fr[0][0] < lim:
-            valor, conf = "", 0.5 if fr and fr[0][0] > lim / 2 else 1.0
-        else:
-            valor = fr[0][1]
-            segundo = fr[1][0] if len(fr) > 1 else 0.0
-            conf = 1.0 if segundo < lim else 0.3  # duas marcadas = duvidoso
+        valor, conf = decidir_escolha(fr, lim)
         recorte = _recorte(alinhada, _caixa_total([o["caixa"] for o in c.get("opcoes", [])])) \
             if c.get("opcoes") else None
-        return {"valor": valor, "confianca": conf,
+        return {"valor": valor, "confianca": conf, "fracoes": fr,
                 "recorte": cv2.cvtColor(recorte, cv2.COLOR_BGR2GRAY) if recorte is not None else None}
     else:
         cz, m = tinta_manuscrita(alinhada, base, c["caixa"])
@@ -377,11 +475,33 @@ def _ler_campo(c: dict, alinhada: np.ndarray, base: np.ndarray, leitor) -> dict:
             return {"valor": "", "confianca": 1.0, "recorte": cz}
         if leitor is None:
             return {"valor": "", "confianca": 0.0, "recorte": cz}
-        texto, conf = leitor.ler_linhas(separar_linhas(imagem_limpa(cz, m)))
-        valor = normalizar(texto, tipo, c.get("ano"), c.get("formato"))
-        if not valido(valor, tipo, c.get("formato")):
-            conf = min(conf, 0.3)  # formato impossível: sempre vai para revisão
-        return {"valor": valor, "confianca": conf, "recorte": cz}
+        # a leitura das linhas é feita depois, junto com os outros campos (ler_formulario)
+        return {"valor": "", "confianca": 0.0, "recorte": cz, "linhas": separar_linhas(imagem_limpa(cz, m))}
+
+
+def decidir_marcacao(f: float, lim: float) -> tuple[str, float]:
+    """Caixinha única: (Sim/Não, confiança). A confiança cai perto do limiar, onde a decisão é duvidosa."""
+    return ("Sim" if f >= lim else "Não"), min(1.0, abs(f - lim) / lim)
+
+
+def decidir_escolha(fr: list, lim: float) -> tuple[str, float]:
+    """Várias caixinhas: fr = [(fracao_de_tinta, valor_da_opcao)]. Vale a mais marcada."""
+    fr = sorted(fr, reverse=True)
+    if not fr or fr[0][0] < lim:
+        return "", 0.5 if fr and fr[0][0] > lim / 2 else 1.0
+    segundo = fr[1][0] if len(fr) > 1 else 0.0
+    return fr[0][1], 1.0 if segundo < lim else 0.3  # duas marcadas = duvidoso
+
+
+@lru_cache(maxsize=1)
+def _corretor_padrao():
+    return portugues.Corretor()
+
+
+def _trocas(antes: str, depois: str) -> str:
+    """"Pederia → Poderia, cellular → celular" (para mostrar na revisão)."""
+    a, b = antes.split(), depois.split()
+    return ", ".join(f"{x} → {y}" for x, y in zip(a, b) if x != y) if len(a) == len(b) else f"{antes} → {depois}"
 
 
 def _caixa_total(caixas):

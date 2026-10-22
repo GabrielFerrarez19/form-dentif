@@ -5,7 +5,7 @@ JSON por formulário, com a **origem de cada dado** (arquivo, página, posição
 OCR leu, confiança e se foi corrigido). Exporta CSV e JSON.
 **Funciona 100% offline.** A internet só é usada na instalação.
 
-Instrumentos lidos: **C (questionário pré-curso), F (diário de bordo) e G (questionário pós-curso)**.
+Instrumentos lidos: **C (questionário pré-curso) e G (questionário pós-curso)**.
 Páginas de outros instrumentos, capa e páginas em branco são reconhecidas e ignoradas.
 
 ## Instalação (uma vez, com internet)
@@ -45,10 +45,18 @@ docker pull mongo:8.0.4                # banco de dados (precisa do Docker insta
    veio; resumo com gráficos e taxa de acerto do OCR; tabela completa com busca.
 6. **Dashboard**: indicadores de impacto com as metas do Instrumento H (satisfação ≥ 70%, melhora de
    autonomia ≥ 70%, concluintes com ≥ 7 encontros, quem foi de "não sei" a "sozinho" em ≥ 3 tarefas),
-   evolução pré × pós das 12 tarefas, respostas do pós-curso, perfil da turma, diário de bordo e de onde
+   evolução pré × pós das 12 tarefas, respostas do pós-curso, perfil da turma e de onde
    vieram os dados. Filtro por turma; cada gráfico tem a tabela ao lado. Os dados são lidos ao vivo do
    MongoDB e nada sai da máquina. Pré e pós são ligados pelo **código do participante** (ex.: P-07),
    então ele precisa ser preenchido nos dois questionários.
+
+7. **Aprendizado**: o sistema aprende com cada campo ⚠️ que você confere ou corrige na revisão:
+   - se o OCR ler de novo o mesmo valor errado naquele campo, já troca pelo certo (na 1ª vez o campo
+     continua com ⚠️; depois de 2 correções iguais, confia e pode gravar direto);
+   - palavras corrigidas do mesmo jeito 2 vezes (ex.: `Whats` → `WhatsApp`) valem para todos os campos de texto;
+   - caixinhas ajustam o limiar de tinta de cada campo com o que as pessoas marcaram como certo.
+   Na revisão aparece 🧠 explicando o que foi corrigido sozinho. Nessa página dá para ver e esquecer cada regra.
+   As correções ficam na coleção **`aprendizado`** e também entram no treino do modelo (`treinar_modelo.py`).
 
 ## Dados (para os dashboards)
 
@@ -70,7 +78,8 @@ MongoDB em `mongodb://127.0.0.1:27017`, banco `formularios` (dados em `dados/mon
   }
   ```
   `dados` tem os valores prontos para gráficos; `campos` diz de onde veio cada um.
-  `metodo`: `ocr` (lido e aceito), `revisado` (OCR corrigido por uma pessoa), `manual` (digitado), `editado` (alterado depois).
+  `metodo`: `ocr` (lido e aceito), `revisado` (OCR corrigido por uma pessoa), `aprendido` (corrigido
+  sozinho pelo que foi aprendido; `lido` guarda o que o OCR leu de fato), `manual` (digitado), `editado` (alterado depois).
 - Coleção **`instrumentos`**: nome, páginas e campos (rótulo, tipo, opções) de cada instrumento.
 - `dados/imagens/`: cópia de cada arquivo enviado. `dados/recortes/`: imagem de cada campo gravado.
 
@@ -86,6 +95,14 @@ Toda gravação é relida e conferida; se algo não bater, é desfeita (nunca fi
    (marca d'água, carimbo) é ignorada; traços que entram pela borda vindos de fora (assinatura) são tirados.
 3. Caixinhas: decide pela quantidade de tinta. Escrita: o modelo **TrOCR** lê linha a linha.
    Depois vêm correções e **regras de validação**: datas e códigos impossíveis vão sempre para revisão.
+4. **Português**: o modelo de letra à mão foi treinado em inglês e, na dúvida, escreve palavras em inglês
+   ("cellular", "news"). Na leitura, os pedaços de palavra que só existem em inglês ficam mais difíceis de
+   escolher; depois, cada palavra que não existe em português vira a palavra portuguesa mais provável a 1 ou 2
+   letras de distância, preferindo letras que se confundem na escrita à mão (`Pederia` → `Poderia`,
+   `mens` → `meus`, `ja` → `já`). Siglas, marcas (WhatsApp), nomes próprios e campos de nome não mudam, e as
+   palavras digitadas na revisão entram no vocabulário. A confiança continua sendo a do modelo original, então
+   nada deixa de ir para revisão por causa disso; na revisão aparece 🔤 com o que foi trocado.
+   Desligar: `OCR_PORTUGUES=0`.
 
 ## Medir o acerto e treinar o modelo
 

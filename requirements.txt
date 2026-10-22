@@ -8,3 +8,4 @@ streamlit==1.66.1
 torch==2.14.1+cpu
 transformers==5.20.2
 pymongo==4.10.1
+pyspellchecker==0.9.1

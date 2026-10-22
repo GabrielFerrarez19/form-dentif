@@ -20,7 +20,7 @@ DPI = 200            # mesma resolução usada em ocr.carregar_paginas
 K = DPI / 72
 ANO = 2026
 LIMIAR_CELULA = 0.02  # X dentro de célula de tabela ocupa pouca área da célula
-RETIRAR = {"A", "B", "I"}  # instrumentos do PDF que o sistema não lê (só questionários C/G e diário F)
+RETIRAR = {"A", "B", "F", "I"}  # instrumentos do PDF que o sistema não lê (só questionários C/G)
 
 TAREFAS = [
     "Ligar, atender e desligar o celular", "Ajustar volume, brilho e tamanho da letra",

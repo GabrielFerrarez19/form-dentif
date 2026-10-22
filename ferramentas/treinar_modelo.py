@@ -232,7 +232,7 @@ def linhas_revisadas() -> list[tuple]:
     out = []
     for d in colecao.find({"origem": "ocr"}):
         for c in d["campos"]:
-            if (c.get("metodo") not in ("ocr", "revisado") or not c.get("recorte") or not c.get("caixa")
+            if (c.get("metodo") not in ("ocr", "revisado", "aprendido") or not c.get("recorte") or not c.get("caixa")
                     or not c["valor"].strip() or tipos.get((d["instrumento"], c["campo"])) not in ("texto", "numero", "data")
                     or c.get("pagina_caderno") not in bases):
                 continue

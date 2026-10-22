@@ -19,7 +19,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from formulario import banco, ocr, painel
+from formulario import aprendizado, banco, ocr, painel, portugues
 from formulario import modelo as mdl
 
 st.set_page_config(page_title="Identificação de Formulários", page_icon="📝", layout="wide")
@@ -320,9 +320,12 @@ def agrupar_paginas(paginas_enviadas, modelo, forcado, refs):
     return grupos, nao_identificadas, sem_formulario
 
 
-def ler_grupo(g, imgs, refs, lt, id_item) -> dict:
+def ler_grupo(g, imgs, refs, lt, id_item, memoria=None, corretor=None) -> dict:
     alinhadas = {n: ocr.alinhar(img, imgs[n], refs[n])[0] for n, img in g["paginas"].items()}
-    res = ocr.ler_formulario(alinhadas, imgs, g["inst"]["campos"], lt)
+    corretor = corretor or portugues.Corretor(portugues.vocabulario_do_projeto())
+    res = ocr.ler_formulario(alinhadas, imgs, g["inst"]["campos"], lt, corretor)
+    # o que as pessoas já corrigiram na revisão corrige a leitura de agora
+    aprendizado.aplicar(g["inst"], res, memoria if memoria is not None else aprendizado.Memoria.carregar())
     return {"inst": g["inst"]["nome"], "nomes": g["nomes"], "arquivos": g["arquivos"],
             "paginas": sorted(g["paginas"]), "alinhou": g["alinhou"], "res": res, "id": id_item,
             "fonte": g.get("fonte", {})}
@@ -335,11 +338,17 @@ def origens_do_item(inst: dict, item: dict, valores: dict) -> dict:
         col = c["coluna"]
         r = item["res"].get(col, {"faltou_pagina": True})
         fonte = item.get("fonte", {}).get(c.get("pagina"), {})
-        lido = None if r.get("faltou_pagina") else r.get("valor", "")
+        lido = None if r.get("faltou_pagina") else r.get("lido_ocr", r.get("valor", ""))
+        if lido is None:
+            metodo = "manual"
+        elif "lido_ocr" in r and r.get("valor", "") == valores.get(col, ""):
+            metodo = "aprendido"  # o sistema corrigiu sozinho com o que aprendeu na revisão
+        else:
+            metodo = "ocr" if lido == valores.get(col, "") else "revisado"
         caixa = c.get("caixa") or (ocr._caixa_total([o["caixa"] for o in c["opcoes"]]) if c.get("opcoes") else None)
         out[col] = {"rotulo": c["rotulo"], "lido": lido,
                     "confianca": None if lido is None else float(r.get("confianca", 0.0)),
-                    "metodo": "manual" if lido is None else ("ocr" if lido == valores.get(col, "") else "revisado"),
+                    "metodo": metodo,
                     "arquivo": fonte.get("arquivo"), "pagina_arquivo": fonte.get("pagina_arquivo"),
                     "pagina_caderno": c.get("pagina"), "caixa": caixa, "recorte": r.get("recorte")}
     return out
@@ -474,14 +483,16 @@ def pagina_ler():
             grupos, perdidas, ignoradas = agrupar_paginas(enviadas, modelo, forcado, refs)
         st.session_state["ignoradas"] = ignoradas
         lt = obter_leitor()
+        memoria = aprendizado.Memoria.carregar()
+        corretor = portugues.Corretor(portugues.vocabulario_do_projeto())
         fila = st.session_state.setdefault("fila", [])
         salvos = st.session_state.setdefault("salvos_auto", [])
         barra = st.progress(0.0, "Lendo...")
         for k, g in enumerate(grupos):
-            item = ler_grupo(g, imgs, refs, lt, f"{len(fila)}_{k}_{g['nomes'][0]}")
+            item = ler_grupo(g, imgs, refs, lt, f"{len(fila)}_{k}_{g['nomes'][0]}", memoria, corretor)
             if auto and item_confiavel(item, g["inst"]):
                 valores = registro_completo(g["inst"], {c: r["valor"] for c, r in item["res"].items()})
-                leituras = {c: (r["valor"], float(r["confianca"])) for c, r in item["res"].items()}
+                leituras = {c: (r.get("lido_ocr", r["valor"]), float(r["confianca"])) for c, r in item["res"].items()}
                 try:
                     rid = banco.inserir(g["inst"]["tabela"], valores, "ocr", "; ".join(item["arquivos"]),
                                         "", leituras, origens_do_item(g["inst"], item, valores))
@@ -556,8 +567,12 @@ def pagina_ler():
                     st.caption(f"Não consegui ler este campo ({r['erro']}). Digite à mão.")
                 elif c["tipo"] in ("texto", "numero", "data") and r["valor"]:
                     st.caption(f"confiança do OCR: {r['confianca']:.0%}")
+                if r.get("portugues"):
+                    st.caption(f"🔤 corrigido para o português: {r['portugues']}")
+                if r.get("aprendido"):
+                    st.caption(f"🧠 {r['aprendido']}")
             if not r.get("faltou_pagina"):
-                leituras[c["coluna"]] = (r["valor"], float(r["confianca"]))
+                leituras[c["coluna"]] = (r.get("lido_ocr", r["valor"]), float(r["confianca"]))
     obs = st.text_area("Observações", key=f"{item['id']}_obs")
 
     a, b, _ = st.columns([1, 1, 3])
@@ -569,8 +584,13 @@ def pagina_ler():
         except Exception as e:
             st.error(f"Não foi possível gravar no banco: {e}. O formulário continua aqui na revisão.")
             return
+        try:  # cada correção ensina o sistema para as próximas leituras
+            n = aprendizado.registrar(inst, item["res"], completo)
+        except Exception as e:  # o formulário já está salvo; só não aprendeu com ele
+            n = 0
+            st.warning(f"Formulário salvo, mas não consegui guardar o aprendizado: {e}")
         fila.pop(0)
-        st.toast(f"{inst['nome']}: registro #{rid} salvo.")
+        st.toast(f"{inst['nome']}: registro #{rid} salvo." + (f" 🧠 {n} correção(ões) aprendida(s)." if n else ""))
         st.rerun()
     if b.button("Descartar"):
         fila.pop(0)
@@ -739,8 +759,8 @@ def _ver_formulario(inst: dict, df: pd.DataFrame, leituras: pd.DataFrame):
 
     orig = banco.origens_df(inst["tabela"])
     orig = orig[orig["registro_id"] == rid].set_index("campo")
-    nomes_metodo = {"ocr": "OCR", "revisado": "OCR corrigido na revisão", "manual": "Digitado",
-                    "editado": "Editado depois"}
+    nomes_metodo = {"ocr": "OCR", "revisado": "OCR corrigido na revisão", "aprendido": "Corrigido pelo que aprendeu",
+                    "manual": "Digitado", "editado": "Editado depois"}
     tabela = []
     for campo in inst["campos"]:
         col = campo["coluna"]
@@ -867,6 +887,45 @@ def pagina_ver():
         _tabela_completa(inst, df)
 
 
+# ---------------------------------------------------------------- 7. aprendizado
+
+def pagina_aprendizado():
+    st.header("7. Aprendizado")
+    st.caption("Cada campo com ⚠️ que você confere ou corrige na revisão ensina o sistema. Na próxima leitura, "
+               "se o OCR ler de novo o mesmo valor errado naquele campo, ele já troca pelo certo: na 1ª vez o "
+               f"campo continua com ⚠️ para você conferir; depois de {aprendizado.CONFIRMACOES} correções iguais, "
+               "ele confia e pode gravar direto. Palavras corrigidas do mesmo jeito valem para todos os campos de "
+               "texto, e as caixinhas ajustam o limiar de tinta de cada campo.")
+    mem = aprendizado.Memoria.carregar()
+    regras = mem.regras()
+    nomes = {i["tabela"]: i["nome"].split(":")[0] for i in mdl.carregar()["instrumentos"]}
+    rotulos = {(i["tabela"], c["coluna"]): c["rotulo"] for i in mdl.carregar()["instrumentos"] for c in i["campos"]}
+    a, b, c = st.columns(3)
+    a.metric("Correções de valor", sum(r["tipo"] == "valor" for r in regras))
+    b.metric("Palavras", sum(r["tipo"] == "palavra" for r in regras))
+    c.metric("Campos de caixinha ajustados", sum(r["tipo"] == "caixinha" and r["limiar"] is not None for r in regras))
+    if not regras:
+        st.info("Nada aprendido ainda. Corrija os campos com ⚠️ em **2. Ler formulários** e salve.")
+        return
+    tipos = {"valor": "Valor do campo", "palavra": "Palavra", "caixinha": "Limiar da caixinha"}
+    df = pd.DataFrame([{
+        "Esquecer": False, "Tipo": tipos[r["tipo"]], "Instrumento": nomes.get(r["instrumento"], r["instrumento"]),
+        "Campo": rotulos.get((r["instrumento"], r["campo"]), r["campo"]),
+        "OCR lê": r["lido"], "Vira": r["certo"] if r["tipo"] != "caixinha" else
+        ("" if r["limiar"] is None else f"limiar {r['limiar']:.3f}"),
+        "Exemplos": f"{r['vezes']} de {r['total']}" if r["tipo"] != "caixinha" else str(r["vezes"]),
+        "Situação": ("✅ aplica sem ⚠️" if r["confia"] else "🟡 aplica, com ⚠️" if r["ativa"] else
+                     "⚙️ ativo" if r["tipo"] == "caixinha" and r["limiar"] is not None else "⏳ juntando exemplos"),
+    } for r in regras])
+    editado = st.data_editor(df, hide_index=True, width="stretch", disabled=[c for c in df.columns if c != "Esquecer"],
+                             key="tabela_aprendizado")
+    marcadas = [regras[i] for i in editado.index[editado["Esquecer"]]]
+    if marcadas and st.button(f"🗑️ Esquecer {len(marcadas)} regra(s)", type="primary"):
+        apagados = sum(aprendizado.esquecer(r) for r in marcadas)
+        st.toast(f"{apagados} exemplo(s) apagado(s).")
+        st.rerun()
+
+
 PAGINAS = {
     "1. Configurar formulário": pagina_configurar,
     "2. Ler formulários": pagina_ler,
@@ -874,6 +933,7 @@ PAGINAS = {
     "4. Registros / exportar": pagina_registros,
     "5. Ver dados extraídos": pagina_ver,
     "6. Dashboard": painel.pagina,
+    "7. Aprendizado": pagina_aprendizado,
 }
 try:
     banco.sincronizar(mdl.carregar())  # índices e catálogo de instrumentos no MongoDB

@@ -1,0 +1,1485 @@
+{
+  "instrumentos": [
+    {
+      "nome": "C: Questionário pré-curso",
+      "tabela": "c_questionario_pre_curso",
+      "paginas": [
+        6
+      ],
+      "campos": [
+        {
+          "rotulo": "Nome do participante",
+          "coluna": "nome_do_participante",
+          "tipo": "texto",
+          "pagina": 6,
+          "caixa": [
+            495,
+            428,
+            995,
+            54
+          ]
+        },
+        {
+          "rotulo": "Idade",
+          "coluna": "idade",
+          "tipo": "numero",
+          "pagina": 6,
+          "caixa": [
+            499,
+            472,
+            135,
+            68
+          ]
+        },
+        {
+          "rotulo": "Turma",
+          "coluna": "turma",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Sexta",
+              "caixa": [
+                864,
+                496,
+                41,
+                38
+              ]
+            },
+            {
+              "valor": "Sábado",
+              "caixa": [
+                1091,
+                496,
+                41,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "Data",
+          "coluna": "data",
+          "tipo": "data",
+          "pagina": 6,
+          "caixa": [
+            499,
+            534,
+            143,
+            68
+          ],
+          "ano": 2026
+        },
+        {
+          "rotulo": "Código do participante",
+          "coluna": "codigo_participante",
+          "tipo": "texto",
+          "pagina": 6,
+          "caixa": [
+            1271,
+            534,
+            166,
+            68
+          ],
+          "formato": "codigo"
+        },
+        {
+          "rotulo": "Tarefa 01: Ligar, atender e desligar o celular",
+          "coluna": "tarefa_01",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                826,
+                178,
+                47
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                826,
+                179,
+                47
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                826,
+                178,
+                47
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 02: Ajustar volume, brilho e tamanho da letra",
+          "coluna": "tarefa_02",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                889,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                889,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                889,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 03: Tirar fotos e enviá-las",
+          "coluna": "tarefa_03",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                956,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                956,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                956,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 04: Enviar mensagem escrita no WhatsApp",
+          "coluna": "tarefa_04",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1020,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1020,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1020,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 05: Enviar e ouvir áudio no WhatsApp",
+          "coluna": "tarefa_05",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1084,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1084,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1084,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 06: Fazer videochamada",
+          "coluna": "tarefa_06",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1151,
+                178,
+                47
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1151,
+                179,
+                47
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1151,
+                178,
+                47
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 07: Pesquisar na internet",
+          "coluna": "tarefa_07",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1214,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1214,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1214,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 08: Perceber mensagem/link suspeito",
+          "coluna": "tarefa_08",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1281,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1281,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1281,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 09: Instalar aplicativo",
+          "coluna": "tarefa_09",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1345,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1345,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1345,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 10: Consultar saldo no app do banco",
+          "coluna": "tarefa_10",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1412,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1412,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1412,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 11: Fazer PIX",
+          "coluna": "tarefa_11",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1476,
+                178,
+                47
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1476,
+                179,
+                47
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1476,
+                178,
+                47
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 12: Acessar Meu Gov.br / INSS Digital",
+          "coluna": "tarefa_12",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1539,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1539,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1539,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Já foi vítima de golpe",
+          "coluna": "vitima_golpe",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Sim, perdeu dinheiro",
+              "caixa": [
+                153,
+                1681,
+                53,
+                38
+              ]
+            },
+            {
+              "valor": "Quase caiu",
+              "caixa": [
+                570,
+                1681,
+                49,
+                38
+              ]
+            },
+            {
+              "valor": "Não",
+              "caixa": [
+                1126,
+                1681,
+                49,
+                38
+              ]
+            },
+            {
+              "valor": "Prefere não responder",
+              "caixa": [
+                1287,
+                1681,
+                49,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "Quem ajuda com o celular",
+          "coluna": "quem_ajuda",
+          "tipo": "escolha",
+          "pagina": 6,
+          "opcoes": [
+            {
+              "valor": "Filhos ou netos",
+              "caixa": [
+                153,
+                1830,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Cônjuge",
+              "caixa": [
+                448,
+                1830,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Vizinho ou amigo",
+              "caixa": [
+                650,
+                1830,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Ninguém",
+              "caixa": [
+                972,
+                1830,
+                45,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "O que gostaria de aprender",
+          "coluna": "gostaria_aprender",
+          "tipo": "texto",
+          "pagina": 6,
+          "caixa": [
+            157,
+            1932,
+            1338,
+            208
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "F: Diário de bordo do encontro",
+      "tabela": "f_diario_de_bordo_do_encontro",
+      "paginas": [
+        8,
+        9
+      ],
+      "campos": [
+        {
+          "rotulo": "Encontro n.º",
+          "coluna": "encontro",
+          "tipo": "numero",
+          "pagina": 8,
+          "caixa": [
+            499,
+            407,
+            120,
+            68
+          ]
+        },
+        {
+          "rotulo": "Data",
+          "coluna": "data",
+          "tipo": "data",
+          "pagina": 8,
+          "caixa": [
+            1166,
+            407,
+            143,
+            68
+          ],
+          "ano": 2026
+        },
+        {
+          "rotulo": "Tema previsto",
+          "coluna": "tema_previsto",
+          "tipo": "texto",
+          "pagina": 8,
+          "caixa": [
+            495,
+            489,
+            323,
+            54
+          ]
+        },
+        {
+          "rotulo": "Conteúdo cumprido",
+          "coluna": "conteudo_cumprido",
+          "tipo": "escolha",
+          "pagina": 8,
+          "opcoes": [
+            {
+              "valor": "Integralmente",
+              "caixa": [
+                153,
+                710,
+                38,
+                38
+              ]
+            },
+            {
+              "valor": "Parcialmente",
+              "caixa": [
+                420,
+                710,
+                38,
+                38
+              ]
+            },
+            {
+              "valor": "Não",
+              "caixa": [
+                624,
+                710,
+                38,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "O que ficou pendente",
+          "coluna": "pendente",
+          "tipo": "texto",
+          "pagina": 8,
+          "caixa": [
+            157,
+            752,
+            1338,
+            138
+          ]
+        },
+        {
+          "rotulo": "O que funcionou bem",
+          "coluna": "funcionou_bem",
+          "tipo": "texto",
+          "pagina": 8,
+          "caixa": [
+            157,
+            1012,
+            1338,
+            200
+          ]
+        },
+        {
+          "rotulo": "Principais dificuldades",
+          "coluna": "dificuldades",
+          "tipo": "texto",
+          "pagina": 8,
+          "caixa": [
+            157,
+            1334,
+            1338,
+            200
+          ]
+        },
+        {
+          "rotulo": "Mudança de estratégia",
+          "coluna": "mudanca_estrategia",
+          "tipo": "texto",
+          "pagina": 8,
+          "caixa": [
+            157,
+            1656,
+            1338,
+            200
+          ]
+        },
+        {
+          "rotulo": "Participantes com atenção redobrada (códigos)",
+          "coluna": "atencao_redobrada",
+          "tipo": "texto",
+          "pagina": 8,
+          "caixa": [
+            157,
+            1978,
+            1338,
+            139
+          ]
+        },
+        {
+          "rotulo": "Ocorrências relevantes",
+          "coluna": "ocorrencias",
+          "tipo": "texto",
+          "pagina": 9,
+          "caixa": [
+            157,
+            323,
+            1338,
+            198
+          ]
+        },
+        {
+          "rotulo": "Ajustes para o próximo encontro",
+          "coluna": "ajustes",
+          "tipo": "texto",
+          "pagina": 9,
+          "caixa": [
+            157,
+            645,
+            1338,
+            198
+          ]
+        },
+        {
+          "rotulo": "Monitores responsáveis pelo preenchimento",
+          "coluna": "monitores_responsaveis",
+          "tipo": "texto",
+          "pagina": 9,
+          "caixa": [
+            151,
+            901,
+            827,
+            68
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "G: Questionário pós-curso",
+      "tabela": "g_questionario_pos_curso",
+      "paginas": [
+        10,
+        11
+      ],
+      "campos": [
+        {
+          "rotulo": "Nome do participante",
+          "coluna": "nome_do_participante",
+          "tipo": "texto",
+          "pagina": 10,
+          "caixa": [
+            495,
+            428,
+            995,
+            54
+          ]
+        },
+        {
+          "rotulo": "Data",
+          "coluna": "data",
+          "tipo": "data",
+          "pagina": 10,
+          "caixa": [
+            499,
+            472,
+            143,
+            68
+          ],
+          "ano": 2026
+        },
+        {
+          "rotulo": "Código do participante",
+          "coluna": "codigo_participante",
+          "tipo": "texto",
+          "pagina": 10,
+          "caixa": [
+            1271,
+            472,
+            166,
+            68
+          ],
+          "formato": "codigo"
+        },
+        {
+          "rotulo": "Encontros que frequentou",
+          "coluna": "encontros_frequentados",
+          "tipo": "numero",
+          "pagina": 10,
+          "caixa": [
+            499,
+            551,
+            135,
+            68
+          ]
+        },
+        {
+          "rotulo": "Tarefa 01: Ligar, atender e desligar o celular",
+          "coluna": "tarefa_01",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                859,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                859,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                859,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 02: Ajustar volume, brilho e tamanho da letra",
+          "coluna": "tarefa_02",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                923,
+                178,
+                50
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                923,
+                179,
+                50
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                923,
+                178,
+                50
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 03: Tirar fotos e enviá-las",
+          "coluna": "tarefa_03",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                989,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                989,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                989,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 04: Enviar mensagem escrita no WhatsApp",
+          "coluna": "tarefa_04",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1053,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1053,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1053,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 05: Enviar e ouvir áudio no WhatsApp",
+          "coluna": "tarefa_05",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1117,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1117,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1117,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 06: Fazer videochamada",
+          "coluna": "tarefa_06",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1184,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1184,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1184,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 07: Pesquisar na internet",
+          "coluna": "tarefa_07",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1248,
+                178,
+                50
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1248,
+                179,
+                50
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1248,
+                178,
+                50
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 08: Perceber mensagem/link suspeito",
+          "coluna": "tarefa_08",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1314,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1314,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1314,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 09: Instalar aplicativo",
+          "coluna": "tarefa_09",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1378,
+                178,
+                51
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1378,
+                179,
+                51
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1378,
+                178,
+                51
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 10: Consultar saldo no app do banco",
+          "coluna": "tarefa_10",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1445,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1445,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1445,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 11: Fazer PIX",
+          "coluna": "tarefa_11",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1509,
+                178,
+                48
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1509,
+                179,
+                48
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1509,
+                178,
+                48
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Tarefa 12: Acessar Meu Gov.br / INSS Digital",
+          "coluna": "tarefa_12",
+          "tipo": "escolha",
+          "pagina": 10,
+          "opcoes": [
+            {
+              "valor": "Não sei fazer",
+              "caixa": [
+                920,
+                1573,
+                178,
+                50
+              ]
+            },
+            {
+              "valor": "Faço com ajuda",
+              "caixa": [
+                1114,
+                1573,
+                179,
+                50
+              ]
+            },
+            {
+              "valor": "Faço sozinho(a)",
+              "caixa": [
+                1309,
+                1573,
+                178,
+                50
+              ]
+            }
+          ],
+          "limiar": 0.02
+        },
+        {
+          "rotulo": "Satisfação com o curso",
+          "coluna": "satisfacao",
+          "tipo": "escolha",
+          "pagina": 11,
+          "opcoes": [
+            {
+              "valor": "Muito satisfeito",
+              "caixa": [
+                153,
+                289,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Satisfeito",
+              "caixa": [
+                465,
+                289,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Indiferente",
+              "caixa": [
+                699,
+                289,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Insatisfeito",
+              "caixa": [
+                915,
+                289,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Muito insatisfeito",
+              "caixa": [
+                1169,
+                289,
+                45,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "Mais segurança e autonomia",
+          "coluna": "mais_autonomia",
+          "tipo": "escolha",
+          "pagina": 11,
+          "opcoes": [
+            {
+              "valor": "Sim, bastante",
+              "caixa": [
+                153,
+                438,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Sim, um pouco",
+              "caixa": [
+                428,
+                438,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Não percebeu diferença",
+              "caixa": [
+                720,
+                438,
+                45,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "Mais preparado para reconhecer golpe",
+          "coluna": "preparado_golpe",
+          "tipo": "escolha",
+          "pagina": 11,
+          "opcoes": [
+            {
+              "valor": "Sim",
+              "caixa": [
+                153,
+                546,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Em parte",
+              "caixa": [
+                294,
+                546,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Não",
+              "caixa": [
+                506,
+                546,
+                45,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "Recomendaria o curso",
+          "coluna": "recomendaria",
+          "tipo": "escolha",
+          "pagina": 11,
+          "opcoes": [
+            {
+              "valor": "Sim",
+              "caixa": [
+                153,
+                655,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Talvez",
+              "caixa": [
+                294,
+                655,
+                45,
+                38
+              ]
+            },
+            {
+              "valor": "Não",
+              "caixa": [
+                469,
+                655,
+                45,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "rotulo": "O que mais gostou / poderia melhorar",
+          "coluna": "gostou_melhorar",
+          "tipo": "texto",
+          "pagina": 11,
+          "caixa": [
+            157,
+            764,
+            1338,
+            260
+          ]
+        },
+        {
+          "rotulo": "Depoimento",
+          "coluna": "depoimento",
+          "tipo": "texto",
+          "pagina": 11,
+          "caixa": [
+            157,
+            1162,
+            1338,
+            198
+          ]
+        },
+        {
+          "rotulo": "Autoriza reprodução do depoimento",
+          "coluna": "autoriza_depoimento",
+          "tipo": "marcacao",
+          "pagina": 11,
+          "caixa": [
+            153,
+            1404,
+            57,
+            38
+          ]
+        }
+      ]
+    }
+  ]
+}

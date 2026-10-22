@@ -1,0 +1,13 @@
+# ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# DADOS PESSOAIS: fotos enviadas, recortes, banco MongoDB, backups. Nunca versionar.
+dados/
+
+# modelos grandes ou baixados (gerados por baixar_modelo.py, ferramentas/baixar_fontes.py e treinar_modelo.py)
+modelos/
+
+# segredos locais do Streamlit
+.streamlit/secrets.toml
